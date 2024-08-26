@@ -1,0 +1,30 @@
+= Golang + HTMX + React Boilerplate
+ifdef::env-github[]
+Gavin Kondrath <78187175+gavink97@users.noreply.github.com>
+v1.0, 2024-04-12
+:homepage: https://github.com/gavink97
+endif::[]
+:toc:
+:icons: font
+
+== Features
+    - Session auth
+    - Strict content security policies
+    - Minimal use of external libraries
+    - Tooling for a complete development experience
+
+== Why
+
+This repo is intended on being my personal boilerplate / component library for
+building web apps.
+
+== Contributing
+
+I'm open to contributions
+
+== Star
+
+If you've found this useful please give it a star ⭐️ as it helps other developers
+find my repos.
+
+image:https://api.star-history.com/svg?repos=gavink97/go-htmx-react&type=Date[link=https://star-history.com/#gavink97/go-htmx-react&Date]

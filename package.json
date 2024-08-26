@@ -1,0 +1,47 @@
+{
+  "name": "gavin-site",
+  "author": "Gavin Kondrath",
+  "email": "78187175+gavink97@users.noreply.github.com",
+  "github": "https://github.com/gavink97",
+  "version": "1.0.0",
+  "description": "My website",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "make test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.9.1",
+    "@babel/preset-typescript": "^7.24.7",
+    "@biomejs/biome": "1.8.3",
+    "@commitlint/cli": "^19.4.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@jest/globals": "^29.7.0",
+    "@playwright/test": "^1.46.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.20",
+    "axe-core": "^4.10.0",
+    "esbuild": "0.23.0",
+    "jest": "^29.7.0",
+    "postcss": "^8.4.41",
+    "sharp": "^0.33.4",
+    "tailwindcss": "^3.4.10",
+    "ts-jest": "^29.2.4",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.1.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "gsap": "^3.12.5",
+    "lucide-react": "^0.417.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.4.0",
+    "tailwindcss-animate": "^1.0.7"
+  }
+}

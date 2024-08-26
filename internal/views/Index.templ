@@ -1,0 +1,20 @@
+package views
+
+templ Index() {
+    <h1>Home</h1>
+}
+
+templ IndexAuth(email string) {
+    @Index()
+        <div>
+        Welcome {email}
+    </div>
+
+}
+
+templ GuestIndex() {
+    @Index()
+        <div>
+        Welcome guest
+        </div>
+}

@@ -1,0 +1,41 @@
+package layouts
+
+import ( 
+	"github.com/gavink97/gavin-site/internal/middleware"
+)
+
+templ nav() {
+	<nav class="p-4">
+		<div class="container flex justify-between">
+			<ol class="flex space-x-4">
+				<li>
+					<a class="text-slate-800" href="/">Home</a>
+				</li>
+				<li>
+					<a class="text-slate-800" href="/about">About</a>
+				</li>
+			</ol>
+			<ol class="flex space-x-4">
+				if middleware.GetUser(ctx) != nil {
+					<li>
+						<button class="text-slate-800" hx-target="body" hx-swap="innerHTML" hx-post="/logout">Logout</button>
+					</li>
+				} else {
+					<li>
+						<a class="text-slate-800" href="/register">Register</a>
+					</li>
+					<li>
+						<a class="text-slate-800" href="/login">Login</a>
+					</li>
+				}
+                <li>
+                    <div id="react-nav"></div>
+                    // ns_error
+                    <script src="assets/components/navbar.js" type="module" nonce={ middleware.GetResponseTargetsNonce(ctx) }></script>
+                </li>
+			</ol>
+		</div>
+	</nav>
+}
+
+
