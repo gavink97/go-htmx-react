@@ -1,16 +1,13 @@
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
+const process = require('process');
 
+const minifyImages = async (inputDir, outputDir) => {
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+    };
 
-const inputDir = './public/images';
-const outputDir = './bin/images';
-
-if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-};
-
-const minifyImages = async () => {
     const images = fs.readdirSync(inputDir)
 
     for (const image of images) {
@@ -24,31 +21,50 @@ const minifyImages = async () => {
 
         if (fs.lstatSync(inputFilePath).isFile()) {
             const ext = path.extname(image).toLowerCase();
-
-            // look at sharp api to see all options for image minfication
-            // https://sharp.pixelplumbing.com/api-utility
             if (ext === '.jpeg' || ext === '.jpg') {
-                await sharp(inputFilePath)
-                    .jpeg({ quality: 60 })
-                    .toFile(outputFilePath);
-
+                await minifyJpeg(inputFilePath, outputFilePath)
             } else if (ext === '.png') {
-                await sharp(inputFilePath)
-                    .png({ quality: 80, compressionLevel: 9})
-                    .toFile(outputFilePath);
-
+                await minifyPng(inputFilePath, outputFilePath)
             } else {
                 console.log(`Skipping unsupported file format: ${image}`)
                 continue;
             }
-
-            console.log(`Minified: ${image}`);
+            console.log(`Image minified: ${outputFilePath}`);
         }
     }
 };
 
-minifyImages()
+// look at sharp api to see all options for image minfication
+// https://sharp.pixelplumbing.com/api-utility
+const minifyJpeg = async (inputFilePath, outputFilePath) => {
+    await sharp(inputFilePath)
+    .jpeg({ quality: 60 })
+    .toFile(outputFilePath);
+};
+
+const minifyPng = async (inputFilePath, outputFilePath) => {
+    await sharp(inputFilePath)
+    .png({ quality: 80, compressionLevel: 9})
+    .toFile(outputFilePath)
+};
+
+const parseArgs = () => {
+    let inputDir = './public/images';
+    let outputDir = './bin/images';
+
+    const args = process.argv.slice(2);
+    args.forEach((arg, index) => {
+        if (arg === '-i' || arg === '--input') {
+            inputDir = args[index + 1];
+        }
+        if (arg === '-o' || arg === '--output') {
+            outputDir = args[index + 1];
+        }
+    });
+    return [inputDir, outputDir];
+};
+
+const [inputDir, outputDir] = parseArgs();
+minifyImages(inputDir, outputDir)
     .then(() => console.log('All images minified successfully.'))
     .catch(err => console.error('Error processing images:', err))
-
-module.exports = { minifyImages, inputDir, outputDir};

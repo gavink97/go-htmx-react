@@ -1,8 +1,24 @@
-import * as esbuild from 'esbuild'
 import * as fs from 'fs';
 import * as path from 'path';
+import * as esbuild from 'esbuild'
 
 const isBuild = process.argv.includes('-build') || process.argv.includes('-b');
+
+const parseInputs = () => {
+    let inputDir = './src/assets';
+    let outputDir = './assets/components';
+
+    const args = process.argv.slice(2);
+    args.forEach((arg, index) => {
+        if (arg === '-i' || arg === '--input') {
+            inputDir = args[index + 1];
+        }
+        if (arg === '-o' || arg === '--output') {
+            outputDir = args[index + 1];
+        }
+    });
+    return [inputDir, outputDir];
+};
 
 function getSubdirectories(dir) {
     return fs.readdirSync(dir).filter(file => {
@@ -10,12 +26,14 @@ function getSubdirectories(dir) {
     });
 }
 
-const assetsDir = './src/assets';
-const subdirectories = getSubdirectories(assetsDir);
 
-const entryPoints = {};
+const [inputDir, outputDir] = parseInputs();
+const subdirectories = getSubdirectories(inputDir);
+
+var entryPoints = {};
+
 subdirectories.forEach(subdir => {
-    const entryFile = path.join(assetsDir, subdir, 'index.ts');
+    const entryFile = path.join(inputDir, subdir, 'index.ts');
     if (fs.existsSync(entryFile)) {
         entryPoints[subdir] = entryFile;
     }
@@ -23,7 +41,7 @@ subdirectories.forEach(subdir => {
 
 const settings = {
     entryPoints: entryPoints,
-    outdir: './assets/components',
+    outdir: outputDir,
     bundle: true,
     minify: true,
     splitting: true,

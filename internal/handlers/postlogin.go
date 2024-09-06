@@ -3,11 +3,12 @@ package handlers
 import (
 	b64 "encoding/base64"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gavink97/gavin-site/internal/hash"
 	"github.com/gavink97/gavin-site/internal/store"
 	"github.com/gavink97/gavin-site/internal/views"
-	"net/http"
-	"time"
 )
 
 type PostLoginHandler struct {
@@ -43,7 +44,10 @@ func (h *PostLoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		c := views.LoginError()
-		c.Render(r.Context(), w)
+		if err := c.Render(r.Context(), w); err != nil {
+			http.Error(w, "Failed to render content", http.StatusInternalServerError)
+		}
+
 		return
 	}
 
@@ -52,7 +56,10 @@ func (h *PostLoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil || !passwordIsValid {
 		w.WriteHeader(http.StatusUnauthorized)
 		c := views.LoginError()
-		c.Render(r.Context(), w)
+		if err := c.Render(r.Context(), w); err != nil {
+			http.Error(w, "Failed to render content", http.StatusInternalServerError)
+		}
+
 		return
 	}
 

@@ -1,9 +1,11 @@
+# https://docs.docker.com/build/building/best-practices/#build-and-test-your-images-in-ci
+# https://programmingwithwolfgang.com/fixing-broken-unit-test-execution-in-dockerfile/
+
+ARG VERSION="0.1-beta"
 ARG NODE_VERSION=22-alpine
 ARG GO_VERSION=1.22-alpine
 
-
-FROM node:$NODE_VERSION AS prebuild
-
+FROM node:$NODE_VERSION AS node
 WORKDIR /app
 
 COPY --link package.json ./
@@ -17,58 +19,69 @@ COPY --link ./tsconfig.json ./
 COPY --link ./tailwind.config.js ./
 COPY --link ./postcss.config.js ./
 COPY --link ./babel.config.js ./
-
-RUN apk add --no-cache make
+COPY --link ./internal ./internal
 
 RUN : \
-&& npm install --verbose\
+&& apk add --no-cache make \
+&& npm install --verbose \
+&& :
+
+
+FROM node AS jest-test
+RUN make jest
+
+
+FROM node AS prebuild
+WORKDIR /app
+
+RUN : \
 && npx tailwindcss -i ./public/css/globals.css -o ./public/css/style.min.css --minify \
 && make eb \
 && make sharp \
 && :
 
 
-FROM golang:$GO_VERSION AS fetch
-
+FROM golang:$GO_VERSION AS go
 WORKDIR /app
-
 COPY go.mod go.sum ./
 
-RUN go mod download
+RUN : \
+&& go mod download \
+# && apk add --no-cache make \
+&& apk add --no-cache make build-base \
+&& :
 
 
-FROM ghcr.io/a-h/templ:latest AS generate
+FROM ghcr.io/a-h/templ:latest AS templ
 COPY --chown=65532:65532 . /app
-COPY --from=fetch /app /app
-COPY --from=prebuild /app /app
+COPY --from=go /app /app
+COPY --from=prebuild --chown=65532:65532 /app /app
 
 WORKDIR /app
+
+
 RUN ["templ", "generate"]
 
 
-FROM golang:$GO_VERSION AS build
-COPY --from=generate /app /app
-ENV env=prod
-ENV HOST=0.0.0.0
-
-RUN apk add --no-cache make build-base
-
+FROM go AS build
 WORKDIR /app
+
+COPY --from=templ /app /app
+
 RUN : \
 # && CGO_ENABLED=0 GOOS=linux go build -o /gavin-site ./cmd/gavin-site/main.go \
 && CGO_ENABLED=1 GOOS=linux go build -o /gavin-site ./cmd/gavin-site/main.go \
 && chmod +x /gavin-site \
-&& adduser --disabled-password -u 10001 nonroot \
+# && adduser --disabled-password -u 10001 nonroot \
 && :
 
 
-# go not running tests
-FROM build AS test
-RUN make test
+FROM build AS go-test
+RUN make gotest
 
 
 #FROM scratch AS deploy
-FROM alpine
+FROM alpine AS deploy
 WORKDIR /
 
 COPY --from=build /gavin-site ./gavin-site
@@ -90,3 +103,9 @@ ENV env=prod
 EXPOSE 8080
 
 ENTRYPOINT ["./gavin-site"]
+
+LABEL vendor=gavink \
+      ink.gav.is-beta=True\
+      ink.gav.is-production=True \
+      ink.gav.version=$VERSION \
+      ink.gav.release-date="2024-08-30"

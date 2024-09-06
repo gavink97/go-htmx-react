@@ -16,103 +16,103 @@ import (
 )
 
 func newRouter() http.Handler {
-    err := godotenv.Load()
-    if err != nil {
-        log.Fatal("Error loading .env file")
-    }
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-    databaseName := os.Getenv("DATABASE_NAME")
-    sessionCookieName := os.Getenv("SESSION_COOKIE_NAME")
+	databaseName := os.Getenv("DATABASE_NAME")
+	sessionCookieName := os.Getenv("SESSION_COOKIE_NAME")
 
-    mux := http.NewServeMux()
+	mux := http.NewServeMux()
 
-    db := database.MustOpen(databaseName)
-    passwordhash := passwordhash.NewHPasswordHash()
+	db := database.MustOpen(databaseName)
+	passwordhash := passwordhash.NewHPasswordHash()
 
-    userStore := dbstore.NewUserStore(
-        dbstore.NewUserStoreParams{
-            DB:           db,
-            PasswordHash: passwordhash,
-        })
+	userStore := dbstore.NewUserStore(
+		dbstore.NewUserStoreParams{
+			DB:           db,
+			PasswordHash: passwordhash,
+		})
 
-    sessionStore := dbstore.NewSessionStore(
-        dbstore.NewSessionStoreParams{
-            DB: db,
-        })
-    // changes in version 1.23
-    publicFiles := http.FileServer(http.Dir("./public"))
-    mux.Handle("/public/*", http.StripPrefix("/public/", publicFiles))
+	sessionStore := dbstore.NewSessionStore(
+		dbstore.NewSessionStoreParams{
+			DB: db,
+		})
 
-    publicAssets := http.FileServer(http.Dir("./assets"))
-    mux.Handle("/assets/*", http.StripPrefix("/assets/", publicAssets))
+	// changes in version 1.23
+	publicFiles := http.FileServer(http.Dir("./public"))
+	mux.Handle("/public/*", http.StripPrefix("/public/", publicFiles))
 
-    authMiddleware := m.NewAuthMiddleware(sessionStore, sessionCookieName)
+	publicAssets := http.FileServer(http.Dir("./assets"))
+	mux.Handle("/assets/*", http.StripPrefix("/assets/", publicAssets))
 
-    // make a function to create + rotate log files
-    err = os.Mkdir("logs", os.ModePerm)
-    if err != nil {
-        log.Fatalf("failed to create logs directory: %v", err)
-    }
+	authMiddleware := m.NewAuthMiddleware(sessionStore, sessionCookieName)
 
-    logFile, err := os.OpenFile("logs/server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-    if err != nil {
-        log.Fatalf("failed to open log file: %v", err)
-    }
+	// make a function to create + rotate log files
+	err = os.Mkdir("logs", os.ModePerm)
+	if err != nil {
+		log.Printf("failed to create logs directory: %v", err)
+	}
 
-    logger := slog.New(slog.NewJSONHandler(logFile, nil))
-    slog.SetDefault(logger)
+	logFile, err := os.OpenFile("logs/server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("failed to open log file: %v", err)
+	}
 
-    lm := loggingMiddleware(logger)
+	logger := slog.New(slog.NewJSONHandler(logFile, nil))
+	slog.SetDefault(logger)
 
-    authChain := alice.New(
-        lm,
-        m.RemoveTrailingSlashMiddleware,
-        perClientRateLimiter,
-         m.TextHTMLMiddleware,
-        m.CSPMiddleware,
-        authMiddleware.AddUserToContext,
-        )
+	lm := loggingMiddleware(logger)
 
-    endpointChain := alice.New(
-        lm,
-        jsonMiddleware,
-        perClientRateLimiter,
-        authMiddleware.AddUserToContext,
-        )
+	authChain := alice.New(
+		lm,
+		m.RemoveTrailingSlashMiddleware,
+		perClientRateLimiter,
+		m.TextHTMLMiddleware,
+		m.CSPMiddleware,
+		authMiddleware.AddUserToContext,
+	)
 
-    mux.Handle("GET /about", authChain.Then(http.HandlerFunc(h.NewAboutHandler().ServeHTTP)))
+	endpointChain := alice.New(
+		lm,
+		jsonMiddleware,
+		perClientRateLimiter,
+		authMiddleware.AddUserToContext,
+	)
 
-    mux.Handle("GET /register", authChain.Then(http.HandlerFunc(h.NewGetRegisterHandler().ServeHTTP)))
+	mux.Handle("GET /about", authChain.Then(http.HandlerFunc(h.NewAboutHandler().ServeHTTP)))
 
-    mux.Handle("POST /register", authChain.Then(http.HandlerFunc(h.NewPostRegisterHandler(h.PostRegisterHandlerParams{
-        UserStore: userStore,
-    }).ServeHTTP)))
+	mux.Handle("GET /register", authChain.Then(http.HandlerFunc(h.NewGetRegisterHandler().ServeHTTP)))
 
-    mux.Handle("GET /login", authChain.Then(http.HandlerFunc(h.NewGetLoginHandler().ServeHTTP)))
+	mux.Handle("POST /register", authChain.Then(http.HandlerFunc(h.NewPostRegisterHandler(h.PostRegisterHandlerParams{
+		UserStore: userStore,
+	}).ServeHTTP)))
 
-    mux.Handle("POST /login", authChain.Then(http.HandlerFunc(h.NewPostLoginHandler(h.PostLoginHandlerParams{
-        UserStore: userStore,
-        SessionStore: sessionStore,
-        PasswordHash: passwordhash,
-        SessionCookieName: sessionCookieName,
-    }).ServeHTTP)))
+	mux.Handle("GET /login", authChain.Then(http.HandlerFunc(h.NewGetLoginHandler().ServeHTTP)))
 
-    mux.Handle("POST /logout", authChain.Then(http.HandlerFunc(h.NewPostLogoutHandler(h.PostLogoutHandlerParams{
-        SessionCookieName: sessionCookieName,
-    }).ServeHTTP)))
+	mux.Handle("POST /login", authChain.Then(http.HandlerFunc(h.NewPostLoginHandler(h.PostLoginHandlerParams{
+		UserStore:         userStore,
+		SessionStore:      sessionStore,
+		PasswordHash:      passwordhash,
+		SessionCookieName: sessionCookieName,
+	}).ServeHTTP)))
 
-    mux.Handle("/", authChain.Then(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        if r.URL.Path != "/" {
-            notFound := h.NewNotFoundHandler()
-            notFound.ServeHTTP(w, r)
-            return
-        }
-        h.NewHomeHandler().ServeHTTP(w, r)
-    })))
+	mux.Handle("POST /logout", authChain.Then(http.HandlerFunc(h.NewPostLogoutHandler(h.PostLogoutHandlerParams{
+		SessionCookieName: sessionCookieName,
+	}).ServeHTTP)))
 
-    // mux.HandleFunc("/", h.NewHomeHandler().ServeHTTP)
-    mux.Handle("/api/data", endpointChain.Then(http.HandlerFunc(endpointHandler)))
+	mux.Handle("/", authChain.Then(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			notFound := h.NewNotFoundHandler()
+			notFound.ServeHTTP(w, r)
+			return
+		}
+		h.NewHomeHandler().ServeHTTP(w, r)
+	})))
 
+	// mux.HandleFunc("/", h.NewHomeHandler().ServeHTTP)
+	mux.Handle("/api/data", endpointChain.Then(http.HandlerFunc(endpointHandler)))
 
-    return mux
+	return mux
 }

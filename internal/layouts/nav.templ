@@ -1,6 +1,6 @@
 package layouts
 
-import ( 
+import (
 	"github.com/gavink97/gavin-site/internal/middleware"
 )
 
@@ -30,12 +30,9 @@ templ nav() {
 				}
                 <li>
                     <div id="react-nav"></div>
-                    // ns_error
-                    <script src="assets/components/navbar.js" type="module" nonce={ middleware.GetResponseTargetsNonce(ctx) }></script>
+                    <script src="assets/components/navbar.js" type="module" nonce={ middleware.GetNonce(ctx) }></script>
                 </li>
 			</ol>
 		</div>
 	</nav>
 }
-
-

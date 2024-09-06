@@ -5,8 +5,12 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
-      - id: check-json
       - id: check-added-large-files
+
+  - repo: https://gitlab.com/bmares/check-json5
+    rev: v1.0.0
+    hooks:
+      - id: check-json5
 
   - repo: https://github.com/dnephin/pre-commit-golang
     rev: v0.5.1
@@ -26,7 +30,7 @@ repos:
         entry: templ fmt
         language: system
         types: [text]
-        files: "\\.templ$" 
+        files: "\\.templ$"
 
       - id: local-biome-check
         name: biome check
@@ -35,15 +39,16 @@ repos:
         types: [text]
         files: "\\.(jsx?|tsx?|c(js|ts)|m(js|ts)|d\\.(ts|cts|mts)|jsonc?|css)$"
 
-      - id: local-jasmine-test
-        name: npx jasmine 
-        entry: npx jasmine
+      - id: local-jest-test
+        name: npx jest
+        entry: npx jest src
         language: node
         pass_filenames: false
 
+        # if fails launch dev server first
       - id: local-playwright-test
         name: npx playwright test
-        entry: npx playwright test
+        entry: npx playwright test tests
         language: node
         pass_filenames: false
 

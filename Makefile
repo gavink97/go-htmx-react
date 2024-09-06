@@ -24,7 +24,7 @@ sharp:
 
 .PHONY: playwright
 playwright:
-	npx playwright test tests/playwright
+	npx playwright test tests
 
 .PHONY: codegen
 codegen:
@@ -36,10 +36,10 @@ report:
 
 .PHONY: jest
 jest:
-	npx jest tests/jest
+	npx jest src
 
-.PHONY: go
-go:
+.PHONY: gotest
+gotest:
 	go test -race -v -timeout 30s ./...
 
 .PHONY: dev
@@ -49,9 +49,9 @@ dev:
 
 .PHONY: test
 test:
-	make playwright \
-	# make jest \
-	make go
+	make jest \
+	&& make gotest \
+	&& make playwright
 
 .PHONY: build
 build:

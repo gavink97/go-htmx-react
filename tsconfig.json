@@ -8,20 +8,21 @@
         "allowJs": true,
         "baseUrl": "src",
         "paths": {
-            "@/*": ["*"]
+            "@/*": ["*"],
+            "test-utils": ["./test-utils.tsx"]
         },
-        /* Bundler mode */
+        // Bundler mode
         "moduleResolution": "bundler",
         "allowImportingTsExtensions": true,
         "noEmit": true,
 
-        /* Linting */
+        // Linting
         "skipLibCheck": true,
         "strict": true,
         "noFallthroughCasesInSwitch": true,
         "forceConsistentCasingInFileNames": true,
 
-        /* Jest Test */
+        // Jest Test
         "esModuleInterop": true,
         "verbatimModuleSyntax": false
     },

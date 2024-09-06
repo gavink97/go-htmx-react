@@ -6,23 +6,14 @@ import (
 	b64 "encoding/base64"
 	"encoding/hex"
 	"fmt"
-    "github.com/gavink97/gavin-site/internal/store"
 	"log"
 	"net/http"
+	"os"
 	"strings"
-    "os"
+
+	"github.com/a-h/templ"
+	"github.com/gavink97/gavin-site/internal/store"
 )
-
-type key string
-
-var NonceKey key = "nonces"
-
-type Nonces struct {
-	Htmx            string
-	ResponseTargets string
-	Tw              string
-	HtmxCSSHash     string
-}
 
 func generateRandomString(length int) string {
 	bytes := make([]byte, length)
@@ -33,32 +24,24 @@ func generateRandomString(length int) string {
 	return hex.EncodeToString(bytes)
 }
 
+// find way to fix unsafe-inline for htmx + react
 func CSPMiddleware(next http.Handler) http.Handler {
-	// To use the same nonces in all responses, move the Nonces
-	// struct creation to here, outside the handler.
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Create a new Nonces struct for every request when here.
-		// move to outside the handler to use the same nonces in all responses
-		nonceSet := Nonces{
-			Htmx:            generateRandomString(16),
-			ResponseTargets: generateRandomString(16),
-			Tw:              generateRandomString(16),
-			HtmxCSSHash:     "sha256-pgn1TCGZX6O77zDvy0oTODMOxemn0oj0LeCnQTRj7Kg=",
+		nonce := generateRandomString(24)
+		ctx := templ.WithNonce(r.Context(), nonce)
+		cspHeader := fmt.Sprintf(
+			"default-src 'none'; "+
+				"script-src 'self' 'nonce-%[1]s' ; "+
+				"connect-src 'self';"+
+				"img-src 'self';"+
+				// "style-src 'self' 'nonce-%[1]s' fonts.googleapis.com ; " +
+				"style-src 'self' 'unsafe-inline'; "+
+				"font-src 'self' fonts.gstatic.com; ",
+			nonce)
+
+		if os.Getenv("env") == "prod" {
+			w.Header().Add("Content-Security-Policy", cspHeader)
 		}
-
-		// set nonces in context
-		ctx := context.WithValue(r.Context(), NonceKey, nonceSet)
-		// insert the nonces into the content security policy header
-        if os.Getenv("env") == "prod" {
-            cspHeader := fmt.Sprintf("default-src 'self'; script-src 'nonce-%s' 'nonce-%s' ; style-src 'nonce-%s' '%s';",
-                nonceSet.Htmx,
-                nonceSet.ResponseTargets,
-                nonceSet.Tw,
-                nonceSet.HtmxCSSHash)
-            w.Header().Set("Content-Security-Policy", cspHeader)
-        }
-
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -70,37 +53,13 @@ func TextHTMLMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// get the Nonce from the context, it is a struct called Nonces,
-// so we can get the nonce we need by the key, i.e. HtmxNonce
-func GetNonces(ctx context.Context) Nonces {
-	nonceSet := ctx.Value(NonceKey)
-	if nonceSet == nil {
-		log.Fatal("error getting nonce set - is nil")
+func GetNonce(ctx context.Context) string {
+	nonce := templ.GetNonce(ctx)
+	if nonce != "" {
+		log.Printf("Nonce not set: %s", nonce)
 	}
 
-	nonces, ok := nonceSet.(Nonces)
-
-	if !ok {
-		log.Fatal("error getting nonce set - not ok")
-	}
-
-	return nonces
-}
-
-func GetHtmxNonce(ctx context.Context) string {
-	nonceSet := GetNonces(ctx)
-
-	return nonceSet.Htmx
-}
-
-func GetResponseTargetsNonce(ctx context.Context) string {
-	nonceSet := GetNonces(ctx)
-	return nonceSet.ResponseTargets
-}
-
-func GetTwNonce(ctx context.Context) string {
-	nonceSet := GetNonces(ctx)
-	return nonceSet.Tw
+	return nonce
 }
 
 type AuthMiddleware struct {
@@ -147,7 +106,7 @@ func (m *AuthMiddleware) AddUserToContext(next http.Handler) http.Handler {
 		sessionID := splitValue[0]
 		userID := splitValue[1]
 
-        // make this debug info
+		// make this debug info
 		fmt.Println("sessionID", sessionID)
 		fmt.Println("userID", userID)
 
@@ -174,11 +133,11 @@ func GetUser(ctx context.Context) *store.User {
 }
 
 func RemoveTrailingSlashMiddleware(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        if r.URL.Path != "/" && strings.HasSuffix(r.URL.Path, "/") {
-            http.Redirect(w, r, strings.TrimSuffix(r.URL.Path, "/"), http.StatusMovedPermanently)
-            return
-        }
-        next.ServeHTTP(w, r)
-    })
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" && strings.HasSuffix(r.URL.Path, "/") {
+			http.Redirect(w, r, strings.TrimSuffix(r.URL.Path, "/"), http.StatusMovedPermanently)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
