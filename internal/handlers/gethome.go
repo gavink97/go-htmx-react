@@ -17,12 +17,13 @@ func NewHomeHandler() *HomeHandler {
 
 func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	subcookie := checkStatusCookie(r)
 	user, ok := r.Context().Value(middleware.UserKey).(*store.User)
 
 	if !ok {
 		c := views.GuestIndex()
 
-		err := layouts.Layout(c, "My website").Render(r.Context(), w)
+		err := layouts.Layout(c, "My website", subcookie).Render(r.Context(), w)
 
 		if err != nil {
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
@@ -33,7 +34,7 @@ func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := views.IndexAuth(user.Email)
-	err := layouts.Layout(c, "My website").Render(r.Context(), w)
+	err := layouts.Layout(c, "My website", subcookie).Render(r.Context(), w)
 
 	if err != nil {
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)

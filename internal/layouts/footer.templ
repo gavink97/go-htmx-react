@@ -1,5 +1,25 @@
 package layouts
 
-templ footer() {
-        <footer class="p-4"></footer>
-    }
+import (
+	"github.com/gavink97/gavin-site/internal/components"
+	m "github.com/gavink97/gavin-site/internal/middleware"
+)
+
+templ footer(subscriptionCookie bool) {
+	<footer class="p-4">
+		<div class="container flex justify-between">
+			<ol class="flex space-x-4">
+				<li>
+					if m.GetUser(ctx) != nil {
+					} else if subscriptionCookie {
+					} else {
+						@components.SubscribeNoAuth()
+					}
+				</li>
+				<li>
+					<p>©Gavin Kondrath</p>
+				</li>
+			</ol>
+		</div>
+	</footer>
+}

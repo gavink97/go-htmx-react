@@ -60,3 +60,8 @@ build:
 .PHONY: prod
 prod:
 	docker-compose -f docker-compose.yml up -d --build
+
+
+.PHONY: goupdate
+goupdate:
+	go get -u ./...

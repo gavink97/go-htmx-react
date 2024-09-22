@@ -7,7 +7,8 @@ import (
 	"github.com/gavink97/gavin-site/internal/views"
 )
 
-type AboutHandLer struct{}
+type AboutHandLer struct {
+}
 
 func NewAboutHandler() *AboutHandLer {
 	return &AboutHandLer{}
@@ -15,7 +16,9 @@ func NewAboutHandler() *AboutHandLer {
 
 func (h *AboutHandLer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := views.About()
-	err := layouts.Layout(c, "My website").Render(r.Context(), w)
+
+	subcookie := checkStatusCookie(r)
+	err := layouts.Layout(c, "My website", subcookie).Render(r.Context(), w)
 
 	if err != nil {
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)

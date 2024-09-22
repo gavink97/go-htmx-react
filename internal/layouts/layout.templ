@@ -1,6 +1,7 @@
 package layouts
 
-templ Layout(contents templ.Component, title string) {
+// this does not feel good
+templ Layout(contents templ.Component, title string, subscriptionCookie bool) {
     @header(title)
     <body class="flex flex-col h-full font-sans">
     @nav()
@@ -8,5 +9,5 @@ templ Layout(contents templ.Component, title string) {
         @contents
      </main>
     </body>
-    @footer()
+    @footer(subscriptionCookie)
     }

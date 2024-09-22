@@ -3,15 +3,15 @@ module github.com/gavink97/gavin-site
 go 1.22.6
 
 require (
-	github.com/a-h/templ v0.2.771
+	github.com/a-h/templ v0.2.778
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/justinas/alice v1.2.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/crypto v0.26.0
+	golang.org/x/crypto v0.27.0
 	golang.org/x/time v0.6.0
 	gorm.io/driver/sqlite v1.5.6
-	gorm.io/gorm v1.25.11
+	gorm.io/gorm v1.25.12
 )
 
 require (

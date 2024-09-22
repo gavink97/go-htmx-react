@@ -102,6 +102,18 @@ func newRouter() http.Handler {
 		SessionCookieName: sessionCookieName,
 	}).ServeHTTP)))
 
+	mux.Handle("GET /subscribe", endpointChain.Then(http.HandlerFunc(h.GetSubscribeHandler)))
+
+	mux.Handle("POST /subscribe", authChain.Then(http.HandlerFunc(h.PostSubscribeHandler)))
+
+	mux.Handle("PUT /subscribe", authChain.Then(http.HandlerFunc(h.PutSubscribeHandler)))
+
+	mux.Handle("DELETE /subscribe", authChain.Then(http.HandlerFunc(h.DeleteSubscribeHandler)))
+
+	mux.Handle("PUT /unsubscribe", authChain.Then(http.HandlerFunc(h.PutUnsubscribeHandler)))
+
+	mux.Handle("GET /profile", authChain.Then(http.HandlerFunc(h.NewProfileHandler().ServeHTTP)))
+
 	mux.Handle("/", authChain.Then(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			notFound := h.NewNotFoundHandler()

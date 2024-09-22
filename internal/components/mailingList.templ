@@ -1,0 +1,125 @@
+package components
+
+templ SubscribeNoAuth() {
+	<div hx-ext="response-targets">
+		<form
+			hx-post="/subscribe"
+			hx-trigger="submit"
+            hx-target-200="#subscribe-toast"
+			hx-target-400="#subscribe-toast"
+		    hx-target-401="#subscribe-toast"
+		>
+			<div id="subscribe-toast"></div>
+            <div class="flex space-x-4">
+			<div>
+				<label for="email">Your email</label>
+				<input
+					type="email"
+					name="email"
+					id="email"
+					placeholder="name@company.com"
+					required=""
+					autocomplete="email"
+				/>
+			</div>
+			<button type="submit">
+				Subscribe
+			</button>
+
+            </div>
+		</form>
+        </div>
+    }
+
+templ SubscribeError() {
+	<p>There was an internal server error, please try again later</p>
+    }
+
+templ SubscribeExists() {
+	<p>You are already subscribed</p>
+    }
+
+templ SubscribeSuccess() {
+	<div hx-ext="response-targets">
+		<form
+			hx-put="/subscribe"
+			hx-trigger="submit"
+            hx-target-200="#subscribe-toast"
+			hx-target-400="#subscribe-toast"
+		    hx-target-401="#subscribe-toast"
+		>
+			<div id="subscribe-toast"></div>
+            <div class="flex space-x-4">
+
+            <div>
+			    <label>Your information</label>
+            </div>
+
+			<div>
+				<label for="fname">First name</label>
+				<input
+					type="text"
+					name="fname"
+					id="fname"
+                    placeholder="Jay"
+				/>
+			</div>
+
+			<div>
+				<label for="lname">Last name</label>
+				<input
+					type="text"
+					name="lname"
+					id="lname"
+                    placeholder="Doe"
+				/>
+			</div>
+
+			<div>
+				<label for="phone">Phone Number</label>
+				<input
+					type="tel"
+					name="phone"
+					id="phone"
+                    placeholder="+1(123)456-7890"
+				/>
+			</div>
+
+			<button type="submit">
+				Submit
+			</button>
+            </div>
+		</form>
+        </div>
+    }
+
+templ UnsubscribeForm() {
+	<div hx-ext="response-targets">
+		<form
+			hx-put="/unsubscribe"
+			hx-trigger="submit"
+            hx-target-200="#subscribe-toast"
+			hx-target-400="#subscribe-toast"
+		    hx-target-401="#subscribe-toast"
+		>
+			<div id="subscribe-toast"></div>
+            <div class="flex space-x-4">
+			<div>
+				<label for="email">Your email</label>
+				<input
+					type="email"
+					name="email"
+					id="email"
+					placeholder="name@company.com"
+					required=""
+					autocomplete="email"
+				/>
+			</div>
+			<button type="submit">
+				Unsubscribe
+			</button>
+
+            </div>
+		</form>
+        </div>
+    }

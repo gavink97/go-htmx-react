@@ -32,8 +32,8 @@ test.describe('register page', () => {
 test.describe('register account', () => {
     test('test', async ({ page }) => {
         await page.goto('http://localhost:3000/register');
-        await page.getByPlaceholder('name@company.com').click();
-        await page.getByPlaceholder('name@company.com').fill('gavin@gmail.com');
+        await page.getByLabel('Your email').click();
+        await page.getByLabel('Your email').fill('gavin@gmail.com');
         await page.getByPlaceholder('••••••••').click();
         await page.getByPlaceholder('••••••••').fill('password');
         await page.getByPlaceholder('••••••••').press('Enter');
@@ -51,8 +51,8 @@ test.describe('login page', () => {
 test.describe('login', () => {
     test('test', async ({ page }) => {
         await page.goto('http://localhost:3000/login');
-        await page.getByPlaceholder('name@company.com').click();
-        await page.getByPlaceholder('name@company.com').fill('gavin@gmail.com');
+        await page.getByLabel('Your email').click();
+        await page.getByLabel('Your email').fill('gavin@gmail.com');
         await page.getByPlaceholder('••••••••').click();
         await page.getByPlaceholder('••••••••').fill('password');
         await page.getByPlaceholder('••••••••').press('Enter');
@@ -62,8 +62,8 @@ test.describe('login', () => {
 test.describe('logout', () => {
     test('test', async ({ page }) => {
         await page.goto('http://localhost:3000/login');
-        await page.getByPlaceholder('name@company.com').click();
-        await page.getByPlaceholder('name@company.com').fill('gavin@gmail.com');
+        await page.getByLabel('Your email').click();
+        await page.getByLabel('Your email').fill('gavin@gmail.com');
         await page.getByPlaceholder('••••••••').click();
         await page.getByPlaceholder('••••••••').fill('password');
         await page.getByPlaceholder('••••••••').press('Enter');

@@ -1,0 +1,15 @@
+package views
+
+import "github.com/gavink97/gavin-site/internal/components"
+
+templ Profile(email string, subscriptionCookie bool) {
+	<div>
+		Hello { email }
+		if subscriptionCookie {
+			@components.UnsubscribeForm()
+		} else {
+			<p>Subscribe to our newsletter :)</p>
+			@components.SubscribeSuccess()
+		}
+	</div>
+}

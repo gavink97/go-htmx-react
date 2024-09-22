@@ -18,6 +18,9 @@ templ nav() {
 			<ol class="flex space-x-4">
 				if middleware.GetUser(ctx) != nil {
 					<li>
+						<a class="text-slate-800" href="/profile">Profile</a>
+					</li>
+					<li>
 						<button class="text-slate-800" hx-target="body" hx-swap="innerHTML" hx-post="/logout">Logout</button>
 					</li>
 				} else {
@@ -28,10 +31,10 @@ templ nav() {
 						<a class="text-slate-800" href="/login">Login</a>
 					</li>
 				}
-                <li>
-                    <div id="react-nav"></div>
-                    <script src="assets/components/navbar.js" type="module" nonce={ middleware.GetNonce(ctx) }></script>
-                </li>
+                // <li>
+                //     <div id="react-nav"></div>
+                //     <script src="assets/components/navbar.js" type="module" nonce={ middleware.GetNonce(ctx) }></script>
+                // </li>
 			</ol>
 		</div>
 	</nav>
