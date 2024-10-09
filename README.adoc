@@ -27,4 +27,6 @@ I'm open to contributions
 If you've found this useful please give it a star ⭐️ as it helps other developers
 find my repos.
 
-image:https://api.star-history.com/svg?repos=gavink97/go-htmx-react&type=Date[link=https://star-history.com/#gavink97/go-htmx-react&Date]
+++++
+<p align="center"><img src="/github-metrics.svg" alt="Metrics" width="400"></p>
+++++

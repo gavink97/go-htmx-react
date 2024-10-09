@@ -28,6 +28,7 @@ type Member struct {
 	MergeFields  map[string]string `json:"merge_fields"`
 }
 
+// https://medium.com/@reetas/clean-ways-of-adding-new-optional-fields-to-a-golang-struct-99ae2fe9719d
 // forgotten email not subscribed
 func PostSubscribeHandler(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
